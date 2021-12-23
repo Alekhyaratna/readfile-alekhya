@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="876464e4-72e1-4abe-9ef6-b1a62b106ebd" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="c647418e-03c1-4d4a-9cf4-8fcfeea344a9" >
+		<file:connection workingDir="C:\Users\alekhyar\Documents\readfiles" />
+	</file:config>
+	<file:config name="writefile_config" doc:name="File Config" doc:id="57b331bb-d01b-4013-9aa7-15f079e296c4" >
+		<file:connection workingDir="C:\Users\alekhyar\Documents\writefiles1" />
+	</file:config>
+	<flow name="readfile-alekhyaFlow" doc:id="aebd2d3d-9dc1-48f5-aa50-062c08e7e8d2" >
+		<http:listener doc:name="Listener" doc:id="19961118-95f5-4298-8471-ad7ceba1bbfc" config-ref="HTTP_Listener_config" path="/readfile"/>
+		<file:read doc:name="Read" doc:id="47172d5b-1c37-4a4e-935d-ea1d3cde96c5" config-ref="File_Config" path="C:\Users\alekhyar\Documents\readfiles\readfile-1.txt" target="readfileOp"/>
+		<ee:transform doc:name="Transform Message" doc:id="f3e711b3-c272-40ae-8e86-1adab9f912d8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Name": "Alekhya",
+	fileoutput: vars.readfileOp ++ " This is next line"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="read Logger" doc:id="e39b752e-e499-4f4c-b63f-91e6bdf45ffc" message="#[payload]"/>
+		<file:write doc:name="Write" doc:id="e52ba859-f5dd-4d86-ad40-04a5fb9c9d18" config-ref="writefile_config" path="writefile2.txt">
+			<file:content><![CDATA[#["this is overwriting"]]]></file:content>
+		</file:write>
+		<set-payload value="file has been written successfully" doc:name="Set Payload" doc:id="56e46582-60c2-4ef0-8ac3-398eca6e6965" />
+		<logger level="INFO" doc:name="write Logger" doc:id="854cb0dd-ed11-49a7-8963-10ee317a9ed9" message="file has been written successfully"/>
+	</flow>
+</mule>
